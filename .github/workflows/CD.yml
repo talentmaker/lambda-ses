@@ -41,7 +41,7 @@ jobs:
           path: main
 
       - name: decrypt .env
-        run: echo '${{ secrets.ENV_DECRYPT_KEY }}' | gpg --batch --yes --passphrase-fd 0 --output ./build/.env --decrypt ./build/.env.gpg
+        run: echo '${{ secrets.ENV_DECRYPT_KEY }}' | gpg --batch --yes --passphrase-fd 0 --output .env --decrypt .env.gpg
 
       - name: zip function
         run: zip function.zip main .env
