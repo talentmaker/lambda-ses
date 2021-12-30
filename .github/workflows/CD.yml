@@ -1,0 +1,56 @@
+name: Deploy to Lambda
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: build Docker image
+        run: docker buildx build --platform linux/amd64 -t lambda-ses .
+
+      - name: build Go binary
+        run: docker run --name=lambda-ses lambda-ses
+
+      - name: copy Go binary
+        run: docker cp lambda-ses:/go/src/github.com/talentmaker/lambda-ses/main main
+
+      - name: Archive Production Artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: main
+          path: main
+
+  deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@master
+        with:
+          name: main
+          path: main
+
+      - name: decrypt .env
+        run: echo '${{ secrets.ENV_DECRYPT_KEY }}' | gpg --batch --yes --passphrase-fd 0 --output ./build/.env --decrypt ./build/.env.gpg
+
+      - name: zip function
+        run: zip function.zip main .env
+
+      - name: default deploy
+        uses: appleboy/lambda-action@master
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: us-east-1
+          function_name: lambda-ses
+          zip_file: function.zip
