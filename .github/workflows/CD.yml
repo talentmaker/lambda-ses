@@ -20,7 +20,7 @@ jobs:
         run: docker run --name=lambda-ses lambda-ses
 
       - name: copy Go binary
-        run: docker cp lambda-ses:/go/src/github.com/talentmaker/lambda-ses/main main
+        run: docker cp lambda-ses:/go/src/github.com/talentmaker/lambda-ses/lambda-ses main
 
       - name: decrypt .env
         run: echo '${{ secrets.ENV_DECRYPT_KEY }}' | gpg --batch --yes --passphrase-fd 0 --output .env --decrypt .env.gpg

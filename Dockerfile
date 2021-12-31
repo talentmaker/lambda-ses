@@ -8,4 +8,4 @@ COPY . .
 
 RUN go get -v .
 
-CMD ["go", "build", "main.go"]
+CMD ["go", "build", "."]
