@@ -181,9 +181,9 @@ func sendBulkEmail(input *SendBulkEmailInput) (*sesv2.SendBulkEmailOutput, error
 }
 
 type HandlerInput struct {
-	Email     *SendEmailInput
-	Emails    []*SendEmailInput
-	BulkEmail *SendBulkEmailInput
+	Email     *SendEmailInput     `json:"email"`
+	Emails    []*SendEmailInput   `json:"emails"`
+	BulkEmail *SendBulkEmailInput `json:"bulkEmail"`
 }
 
 type HandlerOutput struct {
