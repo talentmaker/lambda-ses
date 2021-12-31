@@ -5,6 +5,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 
 	"github.com/aws/aws-lambda-go/lambda"
@@ -36,58 +37,16 @@ func createEmailTags(inputTags MessageTag) []types.MessageTag {
 }
 
 func sendEmailWithContext(ctx context.Context, input *SendEmailInput) (*sesv2.SendEmailOutput, error) {
-	emailTags := createEmailTags(input.EmailTags)
-
-	var simpleMessage types.Message
-
-	if input.Content.Body != nil && input.Content.Subject != nil {
-		simpleMessage = types.Message{
-			Body: &types.Body{
-				Html: &types.Content{
-					Data:    input.Content.Body.Html.Data,
-					Charset: input.Content.Body.Html.Charset,
-				},
-				Text: &types.Content{
-					Data:    input.Content.Body.Text.Data,
-					Charset: input.Content.Body.Text.Charset,
-				},
-			},
-			Subject: &types.Content{
-				Data:    input.Content.Subject.Data,
-				Charset: input.Content.Subject.Charset,
-			},
-		}
-	} else {
-		simpleMessage = types.Message{
-			Body: &types.Body{
-				Html: &types.Content{
-					Data:    input.Content.Simple.Body.Html.Data,
-					Charset: input.Content.Simple.Body.Html.Charset,
-				},
-				Text: &types.Content{
-					Data:    input.Content.Simple.Body.Text.Data,
-					Charset: input.Content.Simple.Body.Text.Charset,
-				},
-			},
-			Subject: &types.Content{
-				Data:    input.Content.Simple.Subject.Data,
-				Charset: input.Content.Simple.Subject.Charset,
-			},
-		}
+	if input.Content == nil {
+		return nil, errors.New("Content is required")
+	} else if input.Destination == nil {
+		return nil, errors.New("Destination is required")
 	}
 
-	return ses.SendEmail(ctx, &sesv2.SendEmailInput{
-		Content: &types.EmailContent{
-			Raw: &types.RawMessage{
-				Data: input.Content.Raw.Data,
-			},
-			Simple: &simpleMessage,
-			Template: &types.Template{
-				TemplateArn:  input.Content.Template.TemplateArn,
-				TemplateData: input.Content.Template.TemplateData,
-				TemplateName: input.Content.Template.TemplateName,
-			},
-		},
+	emailTags := createEmailTags(input.EmailTags)
+
+	functionInput := &sesv2.SendEmailInput{
+		Content: &types.EmailContent{},
 
 		ConfigurationSetName: input.ConfigurationSetName,
 
@@ -103,13 +62,87 @@ func sendEmailWithContext(ctx context.Context, input *SendEmailInput) (*sesv2.Se
 		FromEmailAddress:                          input.FromEmailAddress,
 		FromEmailAddressIdentityArn:               input.FromEmailAddressIdentityArn,
 
-		ListManagementOptions: &types.ListManagementOptions{
-			ContactListName: input.ListManagementOptions.ContactListName,
-			TopicName:       input.ListManagementOptions.TopicName,
-		},
+		ListManagementOptions: nil,
 
 		ReplyToAddresses: input.ReplyToAddresses,
-	})
+	}
+
+	if input.Content.Body != nil && input.Content.Subject != nil {
+		var htmlContent *types.Content
+		var textContent *types.Content
+
+		if input.Content.Body.Html != nil {
+			htmlContent = &types.Content{
+				Data:    input.Content.Body.Html.Data,
+				Charset: input.Content.Body.Html.Charset,
+			}
+		} else if input.Content.Body.Text != nil {
+			textContent = &types.Content{
+				Data:    input.Content.Body.Text.Data,
+				Charset: input.Content.Body.Text.Charset,
+			}
+		}
+
+		functionInput.Content.Simple = &types.Message{
+			Body: &types.Body{
+				Html: htmlContent,
+				Text: textContent,
+			},
+			Subject: &types.Content{
+				Data:    input.Content.Subject.Data,
+				Charset: input.Content.Subject.Charset,
+			},
+		}
+	} else if input.Content.Simple != nil && input.Content.Simple.Body != nil && input.Content.Simple.Subject != nil {
+		var htmlContent *types.Content
+		var textContent *types.Content
+
+		if input.Content.Simple.Body.Html != nil {
+			htmlContent = &types.Content{
+				Data:    input.Content.Simple.Body.Html.Data,
+				Charset: input.Content.Simple.Body.Html.Charset,
+			}
+		} else if input.Content.Simple.Body.Text != nil {
+			textContent = &types.Content{
+				Data:    input.Content.Simple.Body.Text.Data,
+				Charset: input.Content.Simple.Body.Text.Charset,
+			}
+		}
+
+		functionInput.Content.Simple = &types.Message{
+			Body: &types.Body{
+				Html: htmlContent,
+				Text: textContent,
+			},
+			Subject: &types.Content{
+				Data:    input.Content.Simple.Subject.Data,
+				Charset: input.Content.Simple.Subject.Charset,
+			},
+		}
+	}
+
+	if input.Content.Raw != nil {
+		functionInput.Content.Raw = &types.RawMessage{
+			Data: input.Content.Raw.Data,
+		}
+	}
+
+	if input.Content.Template != nil {
+		functionInput.Content.Template = &types.Template{
+			TemplateArn:  input.Content.Template.TemplateArn,
+			TemplateData: input.Content.Template.TemplateData,
+			TemplateName: input.Content.Template.TemplateName,
+		}
+	}
+
+	if input.ListManagementOptions != nil {
+		functionInput.ListManagementOptions = &types.ListManagementOptions{
+			ContactListName: input.ListManagementOptions.ContactListName,
+			TopicName:       input.ListManagementOptions.TopicName,
+		}
+	}
+
+	return ses.SendEmail(ctx, functionInput)
 }
 
 func sendEmail(input *SendEmailInput) (*sesv2.SendEmailOutput, error) {
@@ -140,35 +173,42 @@ func sendBulkEmail(input *SendBulkEmailInput) (*sesv2.SendBulkEmailOutput, error
 	for _, entry := range input.BulkEmailEntries {
 		replacementEmailTags := createEmailTags(entry.ReplacementTags)
 
-		bulkEmailEntries = append(bulkEmailEntries, types.BulkEmailEntry{
+		if entry.Destination == nil {
+			return nil, errors.New("Destination is required")
+		}
+
+		functionInput := &types.BulkEmailEntry{
 			Destination: &types.Destination{
 				BccAddresses: entry.Destination.BccAddresses,
 				CcAddresses:  entry.Destination.CcAddresses,
 				ToAddresses:  entry.Destination.ToAddresses,
 			},
 
-			ReplacementEmailContent: &types.ReplacementEmailContent{
+			ReplacementEmailContent: nil,
+
+			ReplacementTags: replacementEmailTags,
+		}
+
+		if entry.ReplacementEmailContent != nil &&
+			entry.ReplacementEmailContent.ReplacementTemplate != nil &&
+			entry.ReplacementEmailContent.ReplacementTemplate.ReplacementTemplateData != nil {
+
+			functionInput.ReplacementEmailContent = &types.ReplacementEmailContent{
 				ReplacementTemplate: &types.ReplacementTemplate{
 					ReplacementTemplateData: entry.ReplacementEmailContent.ReplacementTemplate.ReplacementTemplateData,
 				},
-			},
+			}
+		}
 
-			ReplacementTags: replacementEmailTags,
-		})
+		bulkEmailEntries = append(bulkEmailEntries, *functionInput)
 	}
 
 	defaultEmailTags := createEmailTags(input.DefaultEmailTags)
 
-	return ses.SendBulkEmail(context.TODO(), &sesv2.SendBulkEmailInput{
+	functionInput := &sesv2.SendBulkEmailInput{
 		BulkEmailEntries: bulkEmailEntries,
 
-		DefaultContent: &types.BulkEmailContent{
-			Template: &types.Template{
-				TemplateArn:  input.DefaultContent.Template.TemplateArn,
-				TemplateData: input.DefaultContent.Template.TemplateData,
-				TemplateName: input.DefaultContent.Template.TemplateName,
-			},
-		},
+		DefaultContent: &types.BulkEmailContent{},
 
 		ConfigurationSetName:                      input.ConfigurationSetName,
 		DefaultEmailTags:                          defaultEmailTags,
@@ -177,7 +217,16 @@ func sendBulkEmail(input *SendBulkEmailInput) (*sesv2.SendBulkEmailOutput, error
 		FromEmailAddress:                          input.FeedbackForwardingEmailAddress,
 		FromEmailAddressIdentityArn:               input.FromEmailAddressIdentityArn,
 		ReplyToAddresses:                          input.ReplyToAddresses,
-	})
+	}
+	if input.DefaultContent != nil && input.DefaultContent.Template != nil {
+		functionInput.DefaultContent.Template = &types.Template{
+			TemplateArn:  input.DefaultContent.Template.TemplateArn,
+			TemplateData: input.DefaultContent.Template.TemplateData,
+			TemplateName: input.DefaultContent.Template.TemplateName,
+		}
+	}
+
+	return ses.SendBulkEmail(context.TODO(), functionInput)
 }
 
 type HandlerInput struct {
