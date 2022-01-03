@@ -245,6 +245,10 @@ type HandlerOutput struct {
 }
 
 func convertSendEmailOutput(output *sesv2.SendEmailOutput) *SendEmailOutput {
+	if output == nil {
+		return &SendEmailOutput{}
+	}
+
 	return &SendEmailOutput{
 		MessageId:      output.MessageId,
 		ResultMetadata: output.ResultMetadata,
