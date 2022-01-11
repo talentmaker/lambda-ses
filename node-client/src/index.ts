@@ -57,7 +57,7 @@ export interface InvocationResponse {
 export class LambdaSes {
     public constructor(public lambdaInstance: LambdaClient, public functionName = "lambda-ses") {}
 
-    public async invokeFunction(
+    public async send(
         payload: Input,
         {
             InvocationType,
