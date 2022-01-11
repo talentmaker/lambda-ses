@@ -42,10 +42,9 @@ jobs:
       - uses: actions/checkout@v2
 
       - uses: actions/download-artifact@v2
-        working-directory: node-client
         with:
           name: dist
-          path: dist
+          path: node-client/dist
 
       - name: deploy
         uses: JamesIves/github-pages-deploy-action@4.1.0
