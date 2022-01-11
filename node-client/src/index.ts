@@ -87,3 +87,5 @@ export class LambdaSes {
         }
     }
 }
+
+export default LambdaSes
