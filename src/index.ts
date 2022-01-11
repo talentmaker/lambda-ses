@@ -1,9 +1,17 @@
+/**
+ * Node JS Client for Lambda-SES
+ *
+ * @license BSD-3-Clause
+ * @copyright 2021 - 2022 Luke Zhang
+ */
+
 import {
     InvocationType as InvocationTypes,
     type InvokeCommandInput,
     type LambdaClient,
     LogType as LogTypes,
     InvokeCommand,
+    InvokeCommandOutput,
 } from "@aws-sdk/client-lambda"
 import {SendBulkEmailInput, SendBulkEmailOutput} from "./types_bulk"
 import {SendEmailInput, SendEmailOutput} from "./types"
@@ -59,8 +67,54 @@ export interface InvocationResponse {
     $metadata: ResponseMetadata
 }
 
+export class LambdaSesError extends Error implements InvocationResponse {
+    public readonly name = "LambdaSesError"
+    public readonly payload: {
+        errorMessage: string
+        errorType: string
+    }
+    public readonly status?: number
+    public readonly error?: string
+    public readonly logs?: string
+    public readonly version?: string
+    public readonly $metadata: ResponseMetadata
+
+    public constructor(result: InvokeCommandOutput) {
+        super()
+
+        this.payload = JSON.parse(new TextDecoder().decode(result.Payload)) as {
+            errorMessage: string
+            errorType: string
+        }
+
+        if (result.Payload) {
+            this.message = `${this.payload.errorType}: ${this.payload.errorMessage}`
+        }
+
+        this.status = result.StatusCode
+        this.error = result.FunctionError
+        this.logs = result.LogResult
+            ? Buffer.from(result.LogResult, "base64").toString("utf-8")
+            : undefined
+        this.version = result.ExecutedVersion
+        this.$metadata = result.$metadata
+    }
+}
+
 export class LambdaSes {
     public constructor(public lambdaInstance: LambdaClient, public functionName = "lambda-ses") {}
+
+    public async send(
+        payload: Input,
+        params?: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">>,
+        throwError?: false,
+    ): Promise<InvocationResponse>
+
+    public async send(
+        payload: Input,
+        params: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">>,
+        throwError: true,
+    ): Promise<InvocationResponse & {error: undefined; payload: Output}>
 
     public async send(
         payload: Input,
@@ -69,6 +123,7 @@ export class LambdaSes {
             LogType,
             ...input
         }: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">> = {},
+        throwError = false,
     ): Promise<InvocationResponse> {
         const config = new InvokeCommand({
             FunctionName: this.functionName,
@@ -82,12 +137,16 @@ export class LambdaSes {
 
         const resultPayload = result.Payload ? new TextDecoder().decode(result.Payload) : undefined
 
-        console.log(resultPayload)
+        if (result.FunctionError && throwError) {
+            throw new LambdaSesError(result)
+        }
 
         return {
             status: result.StatusCode,
             error: result.FunctionError,
-            logs: result.LogResult,
+            logs: result.LogResult
+                ? Buffer.from(result.LogResult, "base64").toString("utf-8")
+                : undefined,
             payload: resultPayload ? (JSON.parse(resultPayload) as Output) : undefined,
             version: result.ExecutedVersion,
             $metadata: result.$metadata,

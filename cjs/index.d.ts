@@ -1,4 +1,10 @@
-import { type InvokeCommandInput, type LambdaClient } from "@aws-sdk/client-lambda";
+/**
+ * Node JS Client for Lambda-SES
+ *
+ * @license BSD-3-Clause
+ * @copyright 2021 - 2022 Luke Zhang
+ */
+import { type InvokeCommandInput, type LambdaClient, InvokeCommandOutput } from "@aws-sdk/client-lambda";
 import { SendBulkEmailInput, SendBulkEmailOutput } from "./types_bulk";
 import { SendEmailInput, SendEmailOutput } from "./types";
 import { type ResponseMetadata } from "@aws-sdk/types";
@@ -42,10 +48,27 @@ export interface InvocationResponse {
     /** Metadata pertaining to this request. */
     $metadata: ResponseMetadata;
 }
+export declare class LambdaSesError extends Error implements InvocationResponse {
+    readonly name = "LambdaSesError";
+    readonly payload: {
+        errorMessage: string;
+        errorType: string;
+    };
+    readonly status?: number;
+    readonly error?: string;
+    readonly logs?: string;
+    readonly version?: string;
+    readonly $metadata: ResponseMetadata;
+    constructor(result: InvokeCommandOutput);
+}
 export declare class LambdaSes {
     lambdaInstance: LambdaClient;
     functionName: string;
     constructor(lambdaInstance: LambdaClient, functionName?: string);
-    send(payload: Input, { InvocationType, LogType, ...input }?: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">>): Promise<InvocationResponse>;
+    send(payload: Input, params?: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">>, throwError?: false): Promise<InvocationResponse>;
+    send(payload: Input, params: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">>, throwError: true): Promise<InvocationResponse & {
+        error: undefined;
+        payload: Output;
+    }>;
 }
 export default LambdaSes;
