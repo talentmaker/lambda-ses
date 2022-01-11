@@ -4,6 +4,48 @@ A simple lambda function that allows access to the AWS SES V2 API from AWS Lambd
 
 ## Examples
 
+### node-client with SDK V3
+
+```js
+import { LambdaClient } from "@aws-sdk/client-lambda";
+import { LambdaSes } from "./dist/cjs";
+
+const config = {
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    },
+    apiVersion: "2022-01-10",
+    region: "us-east-1",
+};
+
+const lambda = new LambdaClient(config);
+const lambdaSes = new LambdaSes(lambda, "lambda-ses");
+
+lambdaSes.send({
+    email: {
+        from: "luke_zhang_04@protonmail.com",
+        dest: {
+            to: ["luke_zhang_04@protonmail.com"],
+        },
+        content: {
+            simple: {
+                body: {
+                    html: {
+                        charset: "UTF-8",
+                        data: "<h1>Hello!</h1><br/><p>This is a message</p>",
+                    },
+                },
+                subject: {
+                    charset: "UTF-8",
+                    data: "no",
+                },
+            },
+        },
+    },
+});
+```
+
 ### CLI V2
 
 Make sure `cli_binary_format=raw-in-base64-out`
