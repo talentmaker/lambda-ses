@@ -1,4 +1,4 @@
-// SESv2 API interavtions through AWS Lambda
+// SESv2 API interactions through AWS Lambda
 // Copyright 2021 - 2022 Luke Zhang
 // BSD-3-Clause License
 package main

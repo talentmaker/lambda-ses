@@ -1,3 +1,10 @@
+/**
+ * Node JS Client for Lambda-SES
+ *
+ * @license BSD-3-Clause
+ * @copyright 2021 - 2022 Luke Zhang
+ */
+
 import {
     InvocationType as InvocationTypes,
     type InvokeCommandInput,
