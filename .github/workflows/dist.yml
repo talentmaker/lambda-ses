@@ -48,8 +48,7 @@ jobs:
 
       - name: deploy
         uses: JamesIves/github-pages-deploy-action@4.1.0
-        working-directory: node-client
         with:
           branch: dist
-          folder: dist
+          folder: node-client/dist
           commit-message: "deploy for ${{ github.sha }}"
