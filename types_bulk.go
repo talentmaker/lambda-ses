@@ -1,7 +1,7 @@
 // Redefinition of SESV2 types with json field declarations
 // Copyright 2015 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // Copyright 2014-2015 Stripe, Inc.
-// Copyright 2021 Luke Zhang
+// Copyright 2021 - 2022 Luke Zhang
 // BSD-3-Clause License
 package main
 
