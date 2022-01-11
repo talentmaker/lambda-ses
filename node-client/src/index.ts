@@ -16,12 +16,12 @@ export interface Input {
 }
 
 export interface Output {
-    email?: SendEmailOutput
-    error?: string
-    emails?: SendEmailOutput[]
-    errors?: string[]
-    bulkEmail?: SendBulkEmailOutput
-    bulkEmailError: string
+    email: SendEmailOutput | null
+    error: string | null
+    emails: SendEmailOutput[] | null
+    errors: string[] | null
+    bulkEmail: SendBulkEmailOutput | null
+    bulkEmailError: string | null
 }
 
 export interface InvocationResponse {
@@ -42,7 +42,12 @@ export interface InvocationResponse {
     logs?: string
 
     /** The response from the function, or an error object. */
-    payload?: Output
+    payload?:
+        | Output
+        | {
+              errorMessage: string
+              errorType: string
+          }
 
     /**
      * The version of the function that executed. When you invoke a function with an alias, this
@@ -75,7 +80,9 @@ export class LambdaSes {
 
         const result = await this.lambdaInstance.send(config)
 
-        const resultPayload = result.Payload?.toString()
+        const resultPayload = result.Payload ? new TextDecoder().decode(result.Payload) : undefined
+
+        console.log(resultPayload)
 
         return {
             status: result.StatusCode,
