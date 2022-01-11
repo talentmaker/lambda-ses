@@ -2,6 +2,20 @@
 
 A simple lambda function that allows access to the AWS SES V2 API from AWS Lambda, which is definetly not to use the free 62 000 emails a month.
 
+## Installing node-client
+
+```sh
+npm i talentmaker/lambda-ses#semver:<version>
+pnpm add talentmaker/lambda-ses#semver:<version>
+yarn add talentmaker/lambda-ses#semver:<version>
+```
+
+E.G
+
+```sh
+pnpm add talentmaker/lambda-ses#semver:^1.0.0
+```
+
 ## Examples
 
 ### node-client with SDK V3
