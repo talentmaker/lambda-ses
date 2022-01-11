@@ -22,7 +22,7 @@ pnpm add talentmaker/lambda-ses#semver:^1.0.0
 
 ```js
 import { LambdaClient } from "@aws-sdk/client-lambda";
-import { LambdaSes } from "./dist/cjs";
+import { LambdaSes } from "lambda-ses";
 
 const config = {
     credentials: {
