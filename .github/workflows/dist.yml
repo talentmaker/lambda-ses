@@ -28,10 +28,9 @@ jobs:
         run: pnpm build:prod
 
       - uses: actions/upload-artifact@v2
-        working-directory: node-client
         with:
           name: dist
-          path: dist
+          path: node-client/dist
 
   deploy:
     name: deploy
