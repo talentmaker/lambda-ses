@@ -8,12 +8,12 @@ export interface Input {
     bulkEmail?: SendBulkEmailInput;
 }
 export interface Output {
-    email?: SendEmailOutput;
-    error?: string;
-    emails?: SendEmailOutput[];
-    errors?: string[];
-    bulkEmail?: SendBulkEmailOutput;
-    bulkEmailError: string;
+    email: SendEmailOutput | null;
+    error: string | null;
+    emails: SendEmailOutput[] | null;
+    errors: string[] | null;
+    bulkEmail: SendBulkEmailOutput | null;
+    bulkEmailError: string | null;
 }
 export interface InvocationResponse {
     /**
@@ -30,7 +30,10 @@ export interface InvocationResponse {
     /** The last 4 KB of the execution log, which is base64 encoded. */
     logs?: string;
     /** The response from the function, or an error object. */
-    payload?: Output;
+    payload?: Output | {
+        errorMessage: string;
+        errorType: string;
+    };
     /**
      * The version of the function that executed. When you invoke a function with an alias, this
      * indicates which version the alias resolved to.
@@ -43,5 +46,6 @@ export declare class LambdaSes {
     lambdaInstance: LambdaClient;
     functionName: string;
     constructor(lambdaInstance: LambdaClient, functionName?: string);
-    invokeFunction(payload: Input, { InvocationType, LogType, ...input }?: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">>): Promise<InvocationResponse>;
+    send(payload: Input, { InvocationType, LogType, ...input }?: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">>): Promise<InvocationResponse>;
 }
+export default LambdaSes;

@@ -7,8 +7,7 @@ class LambdaSes {
         this.lambdaInstance = lambdaInstance;
         this.functionName = functionName;
     }
-    async invokeFunction(payload, { InvocationType, LogType, ...input } = {}) {
-        var _a;
+    async send(payload, { InvocationType, LogType, ...input } = {}) {
         const config = new client_lambda_1.InvokeCommand({
             FunctionName: this.functionName,
             InvocationType: InvocationType !== null && InvocationType !== void 0 ? InvocationType : client_lambda_1.InvocationType.RequestResponse,
@@ -17,7 +16,8 @@ class LambdaSes {
             ...input,
         });
         const result = await this.lambdaInstance.send(config);
-        const resultPayload = (_a = result.Payload) === null || _a === void 0 ? void 0 : _a.toString();
+        const resultPayload = result.Payload ? new TextDecoder().decode(result.Payload) : undefined;
+        console.log(resultPayload);
         return {
             status: result.StatusCode,
             error: result.FunctionError,
@@ -29,4 +29,5 @@ class LambdaSes {
     }
 }
 exports.LambdaSes = LambdaSes;
+exports.default = LambdaSes;
 //# sourceMappingURL=index.js.map
