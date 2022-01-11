@@ -1,0 +1,35 @@
+{
+  "name": "lambda-ses",
+  "version": "1.0.0",
+  "description": "Lambda SES Node client",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "build:prod": "./build.bash"
+  },
+  "keywords": [],
+  "engines": {
+    "node": ">=12"
+  },
+  "author": "Luke Zhang",
+  "license": "BSD-3-Clause",
+  "devDependencies": {
+    "@aws-sdk/client-lambda": "^3.46.0",
+    "@types/node": "^17.0.8",
+    "prettier": "^2.5.1",
+    "prettier-plugin-jsdoc": "^0.3.30",
+    "typescript": "^4.5.4"
+  },
+  "peerDependencies": {
+    "@aws-sdk/client-lambda": "^3",
+    "@types/node": ">=12"
+  },
+  "peerDependenciesMeta": {
+    "@types/node": {
+      "optional": true
+    },
+    "@aws-sdk/client-lambda": {
+      "optional": false
+    }
+  }
+}
