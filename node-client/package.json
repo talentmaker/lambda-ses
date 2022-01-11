@@ -11,6 +11,7 @@
   "engines": {
     "node": ">=12"
   },
+  "type": "module",
   "author": "Luke Zhang",
   "license": "BSD-3-Clause",
   "devDependencies": {
