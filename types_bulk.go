@@ -57,7 +57,7 @@ type BulkEmailEntry struct {
 type BulkEmailContent struct {
 
 	// The template to use for the bulk email message.
-	Template *Template `json:"temaplte"`
+	Template *Template `json:"template"`
 }
 
 // Represents a request to send email messages to multiple destinations using
@@ -115,7 +115,7 @@ type SendBulkEmailInput struct {
 	// FromEmailAddress to be sender@example.com. For more information about sending
 	// authorization, see the Amazon SES Developer Guide
 	// (https://docs.aws.amazon.com/ses/latest/DeveloperGuide/sending-authorization.html).
-	FromEmailAddressIdentityArn *string `json:"fromarn"`
+	FromEmailAddressIdentityArn *string `json:"fromArn"`
 
 	// The "Reply-to" email addresses for the message. When the recipient replies to
 	// the message, each Reply-to address receives the reply.
