@@ -1,1 +1,2 @@
-node-client/src/types/* linguist-detectable=false
+node-client/src/types_bulk.ts linguist-detectable=false
+node-client/src/types.ts linguist-detectable=false
