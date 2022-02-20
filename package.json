@@ -1,6 +1,6 @@
 {
   "name": "lambda-ses",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Lambda SES Node client",
   "main": "index.js",
   "scripts": {
