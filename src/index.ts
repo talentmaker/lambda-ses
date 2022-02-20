@@ -8,7 +8,7 @@
 import {
     InvocationType as InvocationTypes,
     type InvokeCommandInput,
-    type LambdaClient,
+    LambdaClient,
     LogType as LogTypes,
     InvokeCommand,
     InvokeCommandOutput,
@@ -18,21 +18,94 @@ import {SendEmailInput, SendEmailOutput} from "./types"
 import {type ResponseMetadata} from "@aws-sdk/types"
 
 export interface Input {
+    /**
+     * Send a single email
+     *
+     * @example
+     *
+     * ```ts
+     * lambdaSes.send({
+     *     email: {
+     *         from: "luke_zhang_04@protonmail.com",
+     *         dest: {
+     *             to: ["luke_zhang_04@protonmail.com"],
+     *         },
+     *         content: {
+     *             simple: {
+     *                 body: {
+     *                     html: {
+     *                         charset: "UTF-8",
+     *                         data: "<h1>Hello!</h1><br/><p>This is a message</p>",
+     *                     },
+     *                 },
+     *                 subject: {
+     *                     charset: "UTF-8",
+     *                     data: "no",
+     *                 },
+     *             },
+     *         },
+     *     },
+     * })
+     * ```
+     */
     email?: SendEmailInput
+
+    /**
+     * Send multiple emails
+     *
+     * @example
+     *
+     * ```ts
+     * lambdaSes.send({
+     *     emails: [{
+     *         from: "luke_zhang_04@protonmail.com",
+     *         dest: {
+     *             to: ["luke_zhang_04@protonmail.com"],
+     *         },
+     *         content: {
+     *             simple: {
+     *                 body: {
+     *                     html: {
+     *                         charset: "UTF-8",
+     *                         data: "<h1>Hello!</h1><br/><p>This is a message</p>",
+     *                     },
+     *                 },
+     *                 subject: {
+     *                     charset: "UTF-8",
+     *                     data: "no",
+     *                 },
+     *             },
+     *         },
+     *     },
+     * }])
+     * ```
+     */
     emails?: SendEmailInput[]
+
+    /** Send bulk emails with a AWS SES template */
     bulkEmail?: SendBulkEmailInput
 }
 
-export interface Output {
+export interface EmailOutput {
     email: SendEmailOutput | null
     error: string | null
+}
+
+export interface EmailsOutput {
     emails: SendEmailOutput[] | null
     errors: string[] | null
+}
+
+export interface BulkEmailOutput {
     bulkEmail: SendBulkEmailOutput | null
     bulkEmailError: string | null
 }
 
-export interface InvocationResponse {
+export interface Output extends EmailOutput, EmailsOutput, BulkEmailOutput {}
+
+export interface InvocationResponse<
+    _Output extends EmailOutput | EmailsOutput | BulkEmailOutput | Output = Output,
+> {
     /**
      * The HTTP status code is in the 200 range for a successful request. For the `RequestResponse`
      * invocation type, this status code is 200. For the `Event` invocation type, this status code
@@ -51,7 +124,7 @@ export interface InvocationResponse {
 
     /** The response from the function, or an error object. */
     payload?:
-        | Output
+        | _Output
         | {
               errorMessage: string
               errorType: string
@@ -104,17 +177,29 @@ export class LambdaSesError extends Error implements InvocationResponse {
 export class LambdaSes {
     public constructor(public lambdaInstance: LambdaClient, public functionName = "lambda-ses") {}
 
+    /** Use AWS SES to an email(s) */
     public async send(
         payload: Input,
         params?: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">>,
         throwError?: false,
+    ): Promise<InvocationResponse & {error: undefined; payload: Output}>
+
+    /** Use AWS SES to an email(s) */
+    public async send(
+        payload: Input,
+        params: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">> | undefined,
+        throwError: true,
     ): Promise<InvocationResponse>
 
     public async send(
         payload: Input,
-        params: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">>,
-        throwError: true,
-    ): Promise<InvocationResponse & {error: undefined; payload: Output}>
+        params?: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">>,
+        throwError?: boolean,
+    ): Promise<
+        typeof throwError extends true
+            ? InvocationResponse
+            : InvocationResponse & {error: undefined; payload: Output}
+    >
 
     public async send(
         payload: Input,
@@ -151,6 +236,218 @@ export class LambdaSes {
             version: result.ExecutedVersion,
             $metadata: result.$metadata,
         }
+    }
+
+    /**
+     * Send a single email
+     *
+     * @example
+     *
+     * ```ts
+     * lambdaSes.send({
+     *     email: {
+     *         from: "luke_zhang_04@protonmail.com",
+     *         dest: {
+     *             to: ["luke_zhang_04@protonmail.com"],
+     *         },
+     *         content: {
+     *             simple: {
+     *                 body: {
+     *                     html: {
+     *                         charset: "UTF-8",
+     *                         data: "<h1>Hello!</h1><br/><p>This is a message</p>",
+     *                     },
+     *                 },
+     *                 subject: {
+     *                     charset: "UTF-8",
+     *                     data: "no",
+     *                 },
+     *             },
+     *         },
+     *     },
+     * })
+     * ```
+     */
+    public async sendEmail(
+        payload: Exclude<Input["email"], undefined>,
+        params?: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">>,
+        throwError?: false,
+    ): Promise<InvocationResponse<EmailOutput> & {error: undefined; payload: Output}>
+
+    /**
+     * Send a single email
+     *
+     * @example
+     *
+     * ```ts
+     * lambdaSes.send({
+     *     email: {
+     *         from: "luke_zhang_04@protonmail.com",
+     *         dest: {
+     *             to: ["luke_zhang_04@protonmail.com"],
+     *         },
+     *         content: {
+     *             simple: {
+     *                 body: {
+     *                     html: {
+     *                         charset: "UTF-8",
+     *                         data: "<h1>Hello!</h1><br/><p>This is a message</p>",
+     *                     },
+     *                 },
+     *                 subject: {
+     *                     charset: "UTF-8",
+     *                     data: "no",
+     *                 },
+     *             },
+     *         },
+     *     },
+     * })
+     * ```
+     */
+    public async sendEmail(
+        payload: Exclude<Input["email"], undefined>,
+        params: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">>,
+        throwError: true,
+    ): Promise<InvocationResponse<EmailOutput>>
+
+    public async sendEmail(
+        payload: Exclude<Input["email"], undefined>,
+        params?: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">>,
+        throwError?: boolean,
+    ): Promise<
+        typeof throwError extends true
+            ? InvocationResponse<EmailOutput>
+            : InvocationResponse<EmailOutput> & {error: undefined; payload: Output}
+    >
+
+    public async sendEmail(
+        payload: Exclude<Input["email"], undefined>,
+        params: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">> = {},
+        throwError = false,
+    ): Promise<InvocationResponse<EmailOutput>> {
+        return await this.send({email: payload}, params, throwError)
+    }
+
+    /**
+     * Send multiple emails
+     *
+     * @example
+     *
+     * ```ts
+     * lambdaSes.send({
+     *     emails: [{
+     *         from: "luke_zhang_04@protonmail.com",
+     *         dest: {
+     *             to: ["luke_zhang_04@protonmail.com"],
+     *         },
+     *         content: {
+     *             simple: {
+     *                 body: {
+     *                     html: {
+     *                         charset: "UTF-8",
+     *                         data: "<h1>Hello!</h1><br/><p>This is a message</p>",
+     *                     },
+     *                 },
+     *                 subject: {
+     *                     charset: "UTF-8",
+     *                     data: "no",
+     *                 },
+     *             },
+     *         },
+     *     },
+     * }])
+     * ```
+     */
+    public async sendEmails(
+        payload: Exclude<Input["emails"], undefined>,
+        params?: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">>,
+        throwError?: false,
+    ): Promise<InvocationResponse<EmailsOutput> & {error: undefined; payload: Output}>
+
+    /**
+     * Send multiple emails
+     *
+     * @example
+     *
+     * ```ts
+     * lambdaSes.send({
+     *     emails: [{
+     *         from: "luke_zhang_04@protonmail.com",
+     *         dest: {
+     *             to: ["luke_zhang_04@protonmail.com"],
+     *         },
+     *         content: {
+     *             simple: {
+     *                 body: {
+     *                     html: {
+     *                         charset: "UTF-8",
+     *                         data: "<h1>Hello!</h1><br/><p>This is a message</p>",
+     *                     },
+     *                 },
+     *                 subject: {
+     *                     charset: "UTF-8",
+     *                     data: "no",
+     *                 },
+     *             },
+     *         },
+     *     },
+     * }])
+     * ```
+     */
+    public async sendEmails(
+        payload: Exclude<Input["emails"], undefined>,
+        params: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">>,
+        throwError: true,
+    ): Promise<InvocationResponse<EmailsOutput>>
+
+    public async sendEmails(
+        payload: Exclude<Input["emails"], undefined>,
+        params?: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">>,
+        throwError?: boolean,
+    ): Promise<
+        typeof throwError extends true
+            ? InvocationResponse<EmailsOutput>
+            : InvocationResponse<EmailsOutput> & {error: undefined; payload: Output}
+    >
+
+    public async sendEmails(
+        payload: Exclude<Input["emails"], undefined>,
+        params: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">> = {},
+        throwError = false,
+    ): Promise<InvocationResponse<EmailsOutput>> {
+        return await this.send({emails: payload}, params, throwError)
+    }
+
+    /** Send bulk emails with a AWS SES template */
+    public async sendBulkEmail(
+        payload: Exclude<Input["bulkEmail"], undefined>,
+        params?: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">>,
+        throwError?: false,
+    ): Promise<InvocationResponse<BulkEmailOutput> & {error: undefined; payload: Output}>
+
+    /** Send bulk emails with a AWS SES template */
+    public async sendBulkEmail(
+        payload: Exclude<Input["bulkEmail"], undefined>,
+        params: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">>,
+        throwError: true,
+    ): Promise<InvocationResponse<BulkEmailOutput>>
+
+    public async sendBulkEmail(
+        payload: Exclude<Input["bulkEmail"], undefined>,
+        params?: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">>,
+        throwError?: boolean,
+    ): Promise<
+        typeof throwError extends true
+            ? InvocationResponse<BulkEmailOutput>
+            : InvocationResponse<BulkEmailOutput> & {error: undefined; payload: Output}
+    >
+
+    public async sendBulkEmail(
+        payload: Exclude<Input["bulkEmail"], undefined>,
+        params: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">> = {},
+        throwError = false,
+    ): Promise<InvocationResponse<BulkEmailOutput>> {
+        return await this.send({bulkEmail: payload}, params, throwError)
     }
 }
 

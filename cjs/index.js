@@ -55,6 +55,15 @@ class LambdaSes {
             $metadata: result.$metadata,
         };
     }
+    async sendEmail(payload, params = {}, throwError = false) {
+        return await this.send({ email: payload }, params, throwError);
+    }
+    async sendEmails(payload, params = {}, throwError = false) {
+        return await this.send({ emails: payload }, params, throwError);
+    }
+    async sendBulkEmail(payload, params = {}, throwError = false) {
+        return await this.send({ bulkEmail: payload }, params, throwError);
+    }
 }
 exports.LambdaSes = LambdaSes;
 exports.default = LambdaSes;
