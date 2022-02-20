@@ -238,72 +238,14 @@ export class LambdaSes {
         }
     }
 
-    /**
-     * Send a single email
-     *
-     * @example
-     *
-     * ```ts
-     * lambdaSes.send({
-     *     email: {
-     *         from: "luke_zhang_04@protonmail.com",
-     *         dest: {
-     *             to: ["luke_zhang_04@protonmail.com"],
-     *         },
-     *         content: {
-     *             simple: {
-     *                 body: {
-     *                     html: {
-     *                         charset: "UTF-8",
-     *                         data: "<h1>Hello!</h1><br/><p>This is a message</p>",
-     *                     },
-     *                 },
-     *                 subject: {
-     *                     charset: "UTF-8",
-     *                     data: "no",
-     *                 },
-     *             },
-     *         },
-     *     },
-     * })
-     * ```
-     */
+    /** Send a single email */
     public async sendEmail(
         payload: Exclude<Input["email"], undefined>,
         params?: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">>,
         throwError?: false,
     ): Promise<InvocationResponse<EmailOutput> & {error: undefined; payload: Output}>
 
-    /**
-     * Send a single email
-     *
-     * @example
-     *
-     * ```ts
-     * lambdaSes.send({
-     *     email: {
-     *         from: "luke_zhang_04@protonmail.com",
-     *         dest: {
-     *             to: ["luke_zhang_04@protonmail.com"],
-     *         },
-     *         content: {
-     *             simple: {
-     *                 body: {
-     *                     html: {
-     *                         charset: "UTF-8",
-     *                         data: "<h1>Hello!</h1><br/><p>This is a message</p>",
-     *                     },
-     *                 },
-     *                 subject: {
-     *                     charset: "UTF-8",
-     *                     data: "no",
-     *                 },
-     *             },
-     *         },
-     *     },
-     * })
-     * ```
-     */
+    /** Send a single email */
     public async sendEmail(
         payload: Exclude<Input["email"], undefined>,
         params: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">>,
@@ -328,72 +270,14 @@ export class LambdaSes {
         return await this.send({email: payload}, params, throwError)
     }
 
-    /**
-     * Send multiple emails
-     *
-     * @example
-     *
-     * ```ts
-     * lambdaSes.send({
-     *     emails: [{
-     *         from: "luke_zhang_04@protonmail.com",
-     *         dest: {
-     *             to: ["luke_zhang_04@protonmail.com"],
-     *         },
-     *         content: {
-     *             simple: {
-     *                 body: {
-     *                     html: {
-     *                         charset: "UTF-8",
-     *                         data: "<h1>Hello!</h1><br/><p>This is a message</p>",
-     *                     },
-     *                 },
-     *                 subject: {
-     *                     charset: "UTF-8",
-     *                     data: "no",
-     *                 },
-     *             },
-     *         },
-     *     },
-     * }])
-     * ```
-     */
+    /** Send multiple emails */
     public async sendEmails(
         payload: Exclude<Input["emails"], undefined>,
         params?: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">>,
         throwError?: false,
     ): Promise<InvocationResponse<EmailsOutput> & {error: undefined; payload: Output}>
 
-    /**
-     * Send multiple emails
-     *
-     * @example
-     *
-     * ```ts
-     * lambdaSes.send({
-     *     emails: [{
-     *         from: "luke_zhang_04@protonmail.com",
-     *         dest: {
-     *             to: ["luke_zhang_04@protonmail.com"],
-     *         },
-     *         content: {
-     *             simple: {
-     *                 body: {
-     *                     html: {
-     *                         charset: "UTF-8",
-     *                         data: "<h1>Hello!</h1><br/><p>This is a message</p>",
-     *                     },
-     *                 },
-     *                 subject: {
-     *                     charset: "UTF-8",
-     *                     data: "no",
-     *                 },
-     *             },
-     *         },
-     *     },
-     * }])
-     * ```
-     */
+    /** Send multiple emails */
     public async sendEmails(
         payload: Exclude<Input["emails"], undefined>,
         params: Partial<Omit<InvokeCommandInput, "Payload" | "FunctionName">>,
