@@ -7,5 +7,4 @@ WORKDIR /go/src/github.com/talentmaker/lambda-ses
 COPY . .
 
 RUN go get -v .
-
-CMD ["go", "build", "."]
+RUN go build .

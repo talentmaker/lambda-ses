@@ -92,3 +92,25 @@ Make sure `cli_binary_format=raw-in-base64-out`
 ```bash
 aws lambda invoke --function-name "lambda-ses" --payload "$(cat ./email.json)" /dev/stdout
 ```
+
+## Uploading to AWS
+
+1. Build with docker
+
+```sh
+docker build -t ses .
+docker container create --name temp ses
+docker container cp temp:/go/src/github.com/talentmaker/lambda-ses/lambda-ses .
+docker container rm temp
+```
+
+3. Create Lambda Function
+
+![Lambda Config](./media/lambda-config.png)
+
+2. Upload to AWS
+
+```sh
+zip lambda-ses.zip lambda-ses
+aws lambda update-function-code --function-name lambda-ses --zip-file fileb://lambda-ses.zip
+```
