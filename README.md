@@ -100,7 +100,7 @@ aws lambda invoke --function-name "lambda-ses" --payload "$(cat ./email.json)" /
 ```sh
 docker build -t ses .
 docker container create --name temp ses
-docker container cp temp:/go/src/github.com/talentmaker/lambda-ses/lambda-ses .
+docker container cp temp:/go/src/github.com/talentmaker/lambda-ses/main .
 docker container rm temp
 ```
 
@@ -111,6 +111,6 @@ docker container rm temp
 2. Upload to AWS
 
 ```sh
-zip lambda-ses.zip lambda-ses
-aws lambda update-function-code --function-name lambda-ses --zip-file fileb://lambda-ses.zip
+zip main.zip main
+aws lambda update-function-code --function-name lambda-ses --zip-file fileb://main.zip
 ```

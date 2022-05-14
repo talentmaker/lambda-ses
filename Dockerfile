@@ -7,4 +7,4 @@ WORKDIR /go/src/github.com/talentmaker/lambda-ses
 COPY . .
 
 RUN go get -v .
-RUN go build .
+RUN GOOS=linux GOARCH=amd64 go build -o main .
